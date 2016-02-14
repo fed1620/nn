@@ -1,4 +1,5 @@
 import random
+from scipy.special import expit
 
 
 # noinspection PyPep8Naming
@@ -21,7 +22,7 @@ class Node:
     each input
     """
     def generateWeights(self):
-        # Handle the bias node
+        # Handle the bias input
         self.bias['input'] = -1.0
         self.bias['weight'] = float("{0:.1f}".format(random.uniform(-1.0, 1.0)))
 
@@ -41,16 +42,4 @@ class Node:
         for i in range(len(self.inputs)):
             sum = sum + self.inputs[i] * self.weights[i]
 
-        return int(sum > 0)
-
-
-
-
-
-
-
-
-
-
-
-
+        return expit(sum)
