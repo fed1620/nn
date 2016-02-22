@@ -9,6 +9,7 @@ class Node:
         self.bias = dict()
         self.inputs = list()
         self.weights = list()
+        self.targetValue = 0
 
     """
     Set the inputs for this node

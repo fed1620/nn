@@ -20,12 +20,14 @@ nn.createNetwork([2, 3], targets)
 numCorrect = 0
 
 # Make the predictions
-for i in range(len(nn.testingSet)):
+for i in range(1):
     nn.feed(nn.testingSet[i])
     print("Instance", i + 1, ": predicted =", nn.getClassification(), "actual =", nn.testingSet[i][-1])
     if nn.getClassification() == nn.testingSet[i][-1]:
         numCorrect += 1
 
 # Output the accuracy
-accuracy = float(numCorrect) / float(len(nn.testingSet)) * 100
+accuracy = (float(numCorrect) / 1) * 100.0
 print("Accuracy:", float("{0:.1f}".format(accuracy)), '%')
+
+nn.propagateBack()

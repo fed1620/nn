@@ -5,10 +5,14 @@ import random
 from Node import Node
 
 
+# noinspection PyPep8Naming
 class NeuralNetwork:
     def __init__(self):
         # The targets
         self.targets = dict()
+
+        # The learning rate (ada)
+        self.learningRate = 0.1
 
         # The list of layers (of nodes) in our network
         self.layers = list()
@@ -120,22 +124,17 @@ class NeuralNetwork:
         for i in range(len(self.layers)):
             # Because each layer will have a different set of outputs
             outputs = list()
-            # print()
-            # print("Layer", i + 1)
-            # print("--------------------")
 
             # Nodes
             for j in range(len(self.layers[i])):
-                # print()
                 if i == 0:
                     inputs = instance[:-1]
 
-                # print("Node inputs:", inputs)
                 self.layers[i][j].setInputs(inputs)
                 self.layers[i][j].generateWeights()
+
                 output = self.layers[i][j].getOutput()
                 outputs.append(output)
-                # print("Node output:", output)
 
             # Generate the inputs for the next layer
             inputs = list()
@@ -153,6 +152,141 @@ class NeuralNetwork:
 
             if self.outputLayer[i] == max(self.outputLayer):
                 return self.targets[targetKey]
+
+    """
+    Starting with inputs from the specified data instance,
+    calculate the inputs and outputs
+    """
+
+    def feed(self, instance):
+        # Layers
+        for i in range(len(self.layers)):
+            # Because each layer will have a different set of outputs
+            outputs = list()
+            # print()
+            # print("Layer", i + 1)
+            # print("--------------------")
+
+            # Nodes
+            for j in range(len(self.layers[i])):
+                # print()
+                if i == 0:
+                    inputs = instance[:-1]
+
+                # print("Node inputs:", inputs)
+                self.layers[i][j].setInputs(inputs)
+                self.layers[i][j].generateWeights()
+                output = self.layers[i][j].getOutput()
+                outputs.append(output)
+
+                # Map the target value to the target type
+                target = self.layers[i][j].target = instance[-1]
+                if target == 'Iris-setosa':
+                    self.layers[i][j].targetValue = 0
+                elif target == 'Iris-virginica':
+                    self.layers[i][j].targetValue = 1
+                else:
+                    self.layers[i][j].targetValue = 2
+
+            # Generate the inputs for the next layer
+            inputs = list()
+            for j in range(len(outputs)):
+                inputs.append(outputs[j])
+
+            # Save the final outputs of the last layer
+            self.outputLayer = outputs
+
+    '''
+    Starting in the output layer, find the error for each node
+    '''
+    def getOutputNodeError(self, activationJ, targetJ):
+        # Calculate error for an output node
+        return activationJ * ((1 - activationJ) * (activationJ - targetJ))
+
+    '''
+    Starting in the output layer, find the error for each node
+    '''
+    def getHiddenNodeError(self, activationJ, weightsJK, errorsK):
+        # First, get the sum of the products
+        sumOfProducts = 0
+
+        # Loop through and get each weight multiplied by the error
+        # of the node on the right
+        for i in range(len(weightsJK)):
+            sumOfProducts += ((weightsJK[i]) * (errorsK[i]))
+
+        return activationJ * ((1 - activationJ) * sumOfProducts)
+
+    '''
+    Starting in the output layer, find the error for each node
+    '''
+    def calculateError(self):
+        # Error calculation is different for output layer than it is
+        # for hidden layer
+
+        # Keep track of each node's error value. Structure it in the same
+        # way that the network was built, so as to map each node's error to
+        # the node
+
+        errorList = list()
+
+        layers = self.layers[::-1]
+
+        for i in range(len(layers)):
+            currentLayer = list()
+
+            for j in range(len(layers[i])):
+                if i == 0:
+                    error = self.getOutputNodeError(layers[i][j].getOutput(), layers[i][j].targetValue)
+                    currentLayer.append(error)
+                else:
+                    index = i - 1
+                    error = self.getHiddenNodeError(layers[i][j].getOutput(), layers[index][j].weights, errorList[index])
+                    currentLayer.append(error)
+
+            errorList.append(currentLayer)
+
+        return errorList
+
+    '''
+    Update each node's weights
+    '''
+    def updateWeights(self, errorList):
+        # w = w - n(dj)(ai)
+        oldWeights = list()
+        newWeights = list()
+
+        # Store the values of the original weights
+        for i in range(len(self.layers)):
+            for j in range(len(self.layers[i])):
+                for k in range(len(self.layers[i][j].weights)):
+                    oldWeights.append(self.layers[i][j].weights[k])
+
+        # Store the values of the new weights
+        for i in range(len(self.layers)):
+            for j in range(len(self.layers[i])):
+                for k in range(len(self.layers[i][j].weights)):
+                    weight = self.layers[i][j].weights[k] - (self.learningRate * errorList[i][j] * self.layers[i][j].getOutput())
+                    newWeights.append(weight)
+
+        # Compare for debugging
+        for i in range(len(oldWeights)):
+            print("old: ", oldWeights[i], "new: ", newWeights[i])
+
+        return newWeights
+
+    """
+    First, get the errors of all of the nodes
+    then, update the weights accordingly
+    """
+    def propagateBack(self):
+        # Get all of the errors in the network
+        errorList = self.calculateError()
+        errorList = errorList[::-1]
+
+        # Update the weights
+        self.updateWeights(errorList)
+
 
 
 
