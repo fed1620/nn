@@ -114,36 +114,10 @@ class NeuralNetwork:
             key += str(i)
             self.targets[key] = targets[i]
 
+
     """
-    Starting with inputs from the specified data instance,
-    calculate the inputs and outputs
+    Make a prediction as to what the target of this instance might be
     """
-
-    def feed(self, instance):
-        # Layers
-        for i in range(len(self.layers)):
-            # Because each layer will have a different set of outputs
-            outputs = list()
-
-            # Nodes
-            for j in range(len(self.layers[i])):
-                if i == 0:
-                    inputs = instance[:-1]
-
-                self.layers[i][j].setInputs(inputs)
-                self.layers[i][j].generateWeights()
-
-                output = self.layers[i][j].getOutput()
-                outputs.append(output)
-
-            # Generate the inputs for the next layer
-            inputs = list()
-            for j in range(len(outputs)):
-                inputs.append(outputs[j])
-
-            # Save the final outputs of the last layer
-            self.outputLayer = outputs
-
     def getClassification(self):
         # Map each output to its respective target value
         for i in range(len(self.targets)):
@@ -163,9 +137,6 @@ class NeuralNetwork:
         for i in range(len(self.layers)):
             # Because each layer will have a different set of outputs
             outputs = list()
-            # print()
-            # print("Layer", i + 1)
-            # print("--------------------")
 
             # Nodes
             for j in range(len(self.layers[i])):
@@ -173,9 +144,9 @@ class NeuralNetwork:
                 if i == 0:
                     inputs = instance[:-1]
 
-                # print("Node inputs:", inputs)
                 self.layers[i][j].setInputs(inputs)
                 self.layers[i][j].generateWeights()
+
                 output = self.layers[i][j].getOutput()
                 outputs.append(output)
 
@@ -209,6 +180,10 @@ class NeuralNetwork:
     def getHiddenNodeError(self, activationJ, weightsJK, errorsK):
         # First, get the sum of the products
         sumOfProducts = 0
+
+        print(errorsK)
+        print(weightsJK)
+        print()
 
         # Loop through and get each weight multiplied by the error
         # of the node on the right
@@ -286,7 +261,3 @@ class NeuralNetwork:
 
         # Update the weights
         self.updateWeights(errorList)
-
-
-
-

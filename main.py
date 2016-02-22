@@ -26,8 +26,9 @@ for i in range(1):
     if nn.getClassification() == nn.testingSet[i][-1]:
         numCorrect += 1
 
-# Output the accuracy
-accuracy = (float(numCorrect) / 1) * 100.0
-print("Accuracy:", float("{0:.1f}".format(accuracy)), '%')
-
 nn.propagateBack()
+
+
+# Output the accuracy
+accuracy = (float(numCorrect) / len(nn.testingSet)) * 100.0
+print("Accuracy:", float("{0:.1f}".format(accuracy)), '%')
